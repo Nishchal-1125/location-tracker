@@ -20,12 +20,12 @@
       "dest": "/admin.html"
     },
     {
-      "src": "/login",
+      "src": "/login", 
       "dest": "/login.html"
     },
     {
       "src": "/(.*)",
-      "dest": "/client/build/$1"
+      "dest": "/client/build/index.html"
     }
   ],
   "functions": {
