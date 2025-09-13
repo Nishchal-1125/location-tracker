@@ -1,0 +1,850 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics Dashboard - Location Tracker</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .dashboard {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 36px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+            opacity: 0.8;
+        }
+
+        .controls-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+            max-width: 500px;
+        }
+
+        .search-input {
+            flex: 1;
+            padding: 15px 20px;
+            border: 2px solid #e8ecf4;
+            border-radius: 12px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 15px 25px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f8f9fa;
+            color: #495057;
+            border: 2px solid #e9ecef;
+        }
+
+        .btn-secondary:hover {
+            background: #e9ecef;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(40, 167, 69, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 18px;
+            padding: 25px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            transition: transform 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .stat-number {
+            font-size: 42px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .data-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 80px 20px;
+            color: #666;
+        }
+
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f4f6;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 25px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .visitors-grid {
+            display: grid;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .visitor-card {
+            background: #f8f9fa;
+            border-radius: 16px;
+            padding: 25px;
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+
+        .visitor-card:hover {
+            background: #e3f2fd;
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .visitor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .visit-time {
+            color: #667eea;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .visitor-id {
+            font-family: 'Courier New', monospace;
+            background: #667eea;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+        }
+
+        .visitor-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .detail-section {
+            background: white;
+            border-radius: 12px;
+            padding: 18px;
+            border-left: 4px solid #667eea;
+        }
+
+        .detail-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #667eea;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .detail-content {
+            color: #333;
+            line-height: 1.6;
+            font-size: 14px;
+        }
+
+        .location-info {
+            border-left-color: #28a745 !important;
+        }
+
+        .location-info .detail-title {
+            color: #28a745;
+        }
+
+        .device-info {
+            border-left-color: #ffc107 !important;
+        }
+
+        .device-info .detail-title {
+            color: #ffc107;
+        }
+
+        .network-info {
+            border-left-color: #dc3545 !important;
+        }
+
+        .network-info .detail-title {
+            color: #dc3545;
+        }
+
+        .coordinates {
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 8px;
+            font-size: 12px;
+            color: #495057;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 12px;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .page-btn {
+            padding: 12px 18px;
+            border: 2px solid #e9ecef;
+            background: white;
+            color: #495057;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        .page-btn:hover:not(:disabled) {
+            background: #f8f9fa;
+            border-color: #667eea;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .page-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-color: transparent;
+        }
+
+        .page-info {
+            background: #f8f9fa;
+            padding: 12px 20px;
+            border-radius: 10px;
+            color: #666;
+            font-size: 14px;
+            font-weight: 500;
+        }
+
+        .no-data, .error {
+            text-align: center;
+            padding: 80px 20px;
+            color: #666;
+            font-size: 18px;
+        }
+
+        .error {
+            color: #dc3545;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-success {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .badge-info {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .badge-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        @media (max-width: 768px) {
+            .dashboard {
+                padding: 15px;
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-container {
+                max-width: none;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .visitor-details {
+                grid-template-columns: 1fr;
+            }
+
+            .pagination {
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            .header h1 {
+                font-size: 28px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-number {
+                font-size: 32px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard">
+        <div class="header">
+            <h1>🌍 Location Analytics Dashboard</h1>
+            <p>Advanced visitor tracking and analytics platform</p>
+        </div>
+
+        <div class="controls-section">
+            <div class="controls">
+                <div class="search-container">
+                    <input type="text" id="searchInput" class="search-input" placeholder="🔍 Search by location, device, IP address, or session...">
+                    <button class="btn btn-primary" onclick="performSearch()">Search</button>
+                    <button class="btn btn-secondary" onclick="clearSearch()">Clear</button>
+                </div>
+                <button class="btn btn-success" onclick="loadData()">🔄 Refresh</button>
+                <button class="btn btn-secondary" onclick="logout()">🚪 Logout</button>
+            </div>
+        </div>
+
+        <div class="stats-grid" id="stats">
+            <div class="stat-card">
+                <span class="stat-number" id="totalUsers">-</span>
+                <div class="stat-label">Total Visitors</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="todayUsers">-</span>
+                <div class="stat-label">Today's Visits</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="uniqueCountries">-</span>
+                <div class="stat-label">Countries</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="uniqueCities">-</span>
+                <div class="stat-label">Cities</div>
+            </div>
+            <div class="stat-card">
+                <span class="stat-number" id="currentPage">-</span>
+                <div class="stat-label">Current Page</div>
+            </div>
+        </div>
+
+        <div class="data-section">
+            <div id="loading" class="loading">
+                <div class="spinner"></div>
+                <p>Loading visitor analytics...</p>
+            </div>
+
+            <div id="dataContainer" style="display: none;">
+                <div class="visitors-grid" id="visitorsGrid">
+                </div>
+
+                <div class="pagination" id="pagination">
+                </div>
+            </div>
+
+            <div id="noData" class="no-data" style="display: none;">
+                <p>📊 No visitor data found. Start collecting data by visiting your main site!</p>
+            </div>
+
+            <div id="error" class="error" style="display: none;">
+                <p>❌ Error loading data. Please check your server connection.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentPage = 1;
+        let currentSearch = '';
+        let totalPages = 1;
+        let allData = [];
+
+        // Check authentication on page load
+        checkAuthentication();
+
+        async function checkAuthentication() {
+            try {
+                const response = await fetch('/api/auth-status');
+                const data = await response.json();
+                
+                if (!data.authenticated) {
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                // User is authenticated, load data
+                loadData();
+            } catch (error) {
+                console.error('Auth check failed:', error);
+                window.location.href = '/login';
+            }
+        }
+
+        async function logout() {
+            try {
+                const response = await fetch('/api/logout', {
+                    method: 'POST'
+                });
+                
+                if (response.ok) {
+                    window.location.href = '/login';
+                } else {
+                    alert('Logout failed. Please try again.');
+                }
+            } catch (error) {
+                console.error('Logout error:', error);
+                alert('Logout error. Please try again.');
+            }
+        }
+
+        async function loadData(page = 1, search = '') {
+            try {
+                showLoading();
+
+                const url = `/api/data?page=${page}&limit=10&search=${encodeURIComponent(search)}`;
+                const response = await fetch(url);
+                
+                if (response.status === 401) {
+                    // Authentication expired, redirect to login
+                    window.location.href = '/login';
+                    return;
+                }
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+
+                const result = await response.json();
+                
+                currentPage = result.page;
+                currentSearch = search;
+                totalPages = result.totalPages;
+                allData = result.data;
+
+                updateStats(result);
+                renderVisitors(result.data);
+                renderPagination(result);
+
+                showData();
+
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showError();
+            }
+        }
+
+        function showLoading() {
+            document.getElementById('loading').style.display = 'block';
+            document.getElementById('dataContainer').style.display = 'none';
+            document.getElementById('noData').style.display = 'none';
+            document.getElementById('error').style.display = 'none';
+        }
+
+        function showData() {
+            document.getElementById('loading').style.display = 'none';
+            if (allData.length === 0) {
+                document.getElementById('noData').style.display = 'block';
+            } else {
+                document.getElementById('dataContainer').style.display = 'block';
+            }
+        }
+
+        function showError() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('error').style.display = 'block';
+        }
+
+        function updateStats(result) {
+            document.getElementById('totalUsers').textContent = result.total;
+            document.getElementById('currentPage').textContent = result.page;
+
+            // Calculate today's users
+            const today = new Date().toDateString();
+            const todayCount = result.data.filter(user => 
+                new Date(user.timestamp).toDateString() === today
+            ).length;
+            document.getElementById('todayUsers').textContent = todayCount;
+
+            // Calculate unique countries
+            const countries = new Set(result.data
+                .filter(user => user.location?.country)
+                .map(user => user.location.country)
+            );
+            document.getElementById('uniqueCountries').textContent = countries.size;
+
+            // Calculate unique cities
+            const cities = new Set(result.data
+                .filter(user => user.location?.city)
+                .map(user => user.location.city)
+            );
+            document.getElementById('uniqueCities').textContent = cities.size;
+        }
+
+        function renderVisitors(data) {
+            const container = document.getElementById('visitorsGrid');
+            container.innerHTML = '';
+
+            data.forEach((visitor, index) => {
+                const card = createVisitorCard(visitor, index);
+                container.appendChild(card);
+            });
+        }
+
+        function createVisitorCard(visitor, index) {
+            const card = document.createElement('div');
+            card.className = 'visitor-card';
+            
+            const timeStr = new Date(visitor.timestamp).toLocaleString('en-US', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit'
+            });
+
+            const sessionShort = visitor.sessionId ? visitor.sessionId.substring(0, 8) + '...' : 'N/A';
+
+            card.innerHTML = `
+                <div class="visitor-header">
+                    <div class="visit-time">📅 ${timeStr}</div>
+                    <div class="visitor-id">ID: ${sessionShort}</div>
+                </div>
+                
+                <div class="visitor-details">
+                    <div class="detail-section location-info">
+                        <div class="detail-title">
+                            🌍 Location Information
+                        </div>
+                        <div class="detail-content">
+                            ${formatLocationInfo(visitor.location)}
+                        </div>
+                    </div>
+
+                    <div class="detail-section device-info">
+                        <div class="detail-title">
+                            💻 Device & Browser
+                        </div>
+                        <div class="detail-content">
+                            ${formatDeviceInfo(visitor.device)}
+                        </div>
+                    </div>
+
+                    <div class="detail-section network-info">
+                        <div class="detail-title">
+                            🌐 Network Information
+                        </div>
+                        <div class="detail-content">
+                            ${formatNetworkInfo(visitor.network, visitor.device)}
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        function formatLocationInfo(location) {
+            if (!location) return '<span class="badge badge-warning">Unknown Location</span>';
+            
+            const parts = [];
+            if (location.city) parts.push(`🏙️ ${location.city}`);
+            if (location.state && location.state !== location.city) parts.push(`📍 ${location.state}`);
+            if (location.country) parts.push(`🏳️ ${location.country}`);
+            if (location.postalCode) parts.push(`📮 ${location.postalCode}`);
+            
+            let result = parts.length > 0 ? parts.join('<br>') : '<span class="badge badge-warning">Location Unknown</span>';
+            
+            if (location.latitude && location.longitude) {
+                result += `<div class="coordinates">📍 ${location.latitude.toFixed(6)}, ${location.longitude.toFixed(6)}</div>`;
+            }
+            
+            if (location.address && location.address.length > 0) {
+                const shortAddress = location.address.length > 50 ? 
+                    location.address.substring(0, 50) + '...' : location.address;
+                result += `<div style="margin-top: 8px; font-size: 12px; color: #666;">📍 ${shortAddress}</div>`;
+            }
+            
+            return result;
+        }
+
+        function formatDeviceInfo(device) {
+            if (!device) return '<span class="badge badge-warning">Unknown Device</span>';
+            
+            const browser = device.browser || 'Unknown';
+            const browserVersion = device.browserVersion || '';
+            const os = device.os || 'Unknown';
+            const osVersion = device.osVersion || '';
+            const screenRes = device.screenResolution || 'Unknown';
+            const deviceType = device.device || 'Unknown';
+            
+            return `
+                <div><strong>🌐 Browser:</strong> ${browser} ${browserVersion}</div>
+                <div><strong>💻 OS:</strong> ${os} ${osVersion}</div>
+                <div><strong>� Device:</strong> ${deviceType}</div>
+                <div><strong>�📺 Screen:</strong> ${screenRes}</div>
+                <div><strong>🔧 Platform:</strong> ${device.platform || 'Unknown'}</div>
+            `;
+        }
+
+        function formatNetworkInfo(network, device) {
+            const ip = network?.ip || 'Unknown';
+            const connection = network?.connectionType || 'Unknown';
+            const language = device?.language || 'Unknown';
+            const timezone = device?.timezone || 'Unknown';
+            
+            return `
+                <div><strong>🔢 IP Address:</strong> <code>${ip}</code></div>
+                <div><strong>📡 Connection:</strong> ${connection}</div>
+                <div><strong>🌐 Language:</strong> ${language}</div>
+                <div><strong>🕒 Timezone:</strong> ${timezone}</div>
+            `;
+        }
+
+        function renderPagination(result) {
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+
+            // Previous button
+            const prevBtn = document.createElement('button');
+            prevBtn.textContent = '← Previous';
+            prevBtn.className = 'page-btn';
+            prevBtn.disabled = !result.hasPrev;
+            prevBtn.onclick = () => loadData(currentPage - 1, currentSearch);
+            pagination.appendChild(prevBtn);
+
+            // Page numbers
+            const startPage = Math.max(1, currentPage - 2);
+            const endPage = Math.min(totalPages, currentPage + 2);
+
+            if (startPage > 1) {
+                const firstBtn = document.createElement('button');
+                firstBtn.textContent = '1';
+                firstBtn.className = 'page-btn';
+                firstBtn.onclick = () => loadData(1, currentSearch);
+                pagination.appendChild(firstBtn);
+
+                if (startPage > 2) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.style.padding = '12px';
+                    ellipsis.style.color = '#666';
+                    pagination.appendChild(ellipsis);
+                }
+            }
+
+            for (let i = startPage; i <= endPage; i++) {
+                const pageBtn = document.createElement('button');
+                pageBtn.textContent = i;
+                pageBtn.className = i === currentPage ? 'page-btn active' : 'page-btn';
+                pageBtn.onclick = () => loadData(i, currentSearch);
+                pagination.appendChild(pageBtn);
+            }
+
+            if (endPage < totalPages) {
+                if (endPage < totalPages - 1) {
+                    const ellipsis = document.createElement('span');
+                    ellipsis.textContent = '...';
+                    ellipsis.style.padding = '12px';
+                    ellipsis.style.color = '#666';
+                    pagination.appendChild(ellipsis);
+                }
+
+                const lastBtn = document.createElement('button');
+                lastBtn.textContent = totalPages;
+                lastBtn.className = 'page-btn';
+                lastBtn.onclick = () => loadData(totalPages, currentSearch);
+                pagination.appendChild(lastBtn);
+            }
+
+            // Page info
+            const info = document.createElement('div');
+            info.className = 'page-info';
+            info.textContent = `Page ${currentPage} of ${totalPages} (${result.total} total visitors)`;
+            pagination.appendChild(info);
+
+            // Next button
+            const nextBtn = document.createElement('button');
+            nextBtn.textContent = 'Next →';
+            nextBtn.className = 'page-btn';
+            nextBtn.disabled = !result.hasNext;
+            nextBtn.onclick = () => loadData(currentPage + 1, currentSearch);
+            pagination.appendChild(nextBtn);
+        }
+
+        function performSearch() {
+            const searchTerm = document.getElementById('searchInput').value.trim();
+            loadData(1, searchTerm);
+        }
+
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            loadData(1, '');
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
+            }
+        });
+
+        // Auto-refresh every 10 minutes
+        setInterval(() => {
+            loadData(currentPage, currentSearch);
+        }, 600000);
+    </script>
+</body>
+</html>
